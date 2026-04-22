@@ -7,8 +7,6 @@ ADMIN_EMAIL = st.secrets["admin"]["ADMIN_EMAIL"]
 
 def show_login_page():
     # ── Safe cookie access ──
-    cookie = st.session_state.get("cookie_controller")
-
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
@@ -160,15 +158,14 @@ def show_login_page():
                     st.session_state["role"]      = "admin"
                     st.session_state["uid"]       = uid
                     st.session_state["email"]     = email
-                    # Clean up BEFORE rerun
+                    # Set query params so refresh restores session
+                    st.query_params["uid"]  = uid
+                    st.query_params["em"]   = email
+                    st.query_params["role"] = "admin"
                     for k in ["awaiting_2fa", "pending_uid", "pending_email",
                               "email_otp", "otp_sent_time"]:
                         st.session_state.pop(k, None)
-                    if cookie:
-                        cookie.set("uid",   uid)
-                        cookie.set("email", email)
-                        cookie.set("role",  "admin")
-                    st.rerun()  # only ONE rerun
+                    st.rerun()
                 else:
                     st.error(msg)
 
@@ -231,10 +228,9 @@ def show_login_page():
                             st.session_state["role"]      = "user"
                             st.session_state["uid"]       = uid
                             st.session_state["email"]     = email
-                            if cookie:
-                                cookie.set("uid",   uid)
-                                cookie.set("email", email)
-                                cookie.set("role",  "user")
+                            st.query_params["uid"]  = uid
+                            st.query_params["em"]   = email
+                            st.query_params["role"] = "user"
                             st.rerun()
 
     with tab2:
