@@ -14,31 +14,20 @@ from auth.admin_page import show_admin_page
 
 init_firebase()
 
-if "cookie_controller" not in st.session_state:
-    st.session_state["cookie_controller"] = CookieController()
+# ── Read query params to restore session on refresh ──
+params  = st.query_params
+uid_p   = params.get("uid",  None)
+email_p = params.get("em",   None)
+role_p  = params.get("role", None)
 
-cookie = st.session_state["cookie_controller"]
-
-if "cookies_ready" not in st.session_state:
-    st.session_state["cookies_ready"] = False
-    st.rerun() 
-
-# ── Restore session from cookie on refresh ──
-if not st.session_state.get("logging_out"):  # ← only restore if NOT logging out
-    if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
-        uid_cookie   = cookie.get("uid")
-        email_cookie = cookie.get("email")
-        role_cookie  = cookie.get("role")
-
-        if uid_cookie and email_cookie and role_cookie:
-            st.session_state["logged_in"] = True
-            st.session_state["uid"]       = uid_cookie
-            st.session_state["email"]     = email_cookie
-            st.session_state["role"]      = role_cookie
+if uid_p and email_p and role_p:
+    st.session_state["logged_in"] = True
+    st.session_state["uid"]       = uid_p
+    st.session_state["email"]     = email_p
+    st.session_state["role"]      = role_p
 
 # ── Auth gate ──
 if not st.session_state.get("logged_in"):
-    st.session_state.pop("logging_out", None)  # clean up flag
     show_login_page()
     st.stop()
 
@@ -82,12 +71,8 @@ if st.session_state["role"] == "admin":
             st.rerun()
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
-            for c in ["uid", "email", "role"]:
-                try:
-                    cookie.remove(c)
-                except Exception:
-                    pass
-            for key in ["logged_in", "uid", "email", "role", "page", "logging_out"]:
+            st.query_params.clear()
+            for key in ["logged_in", "uid", "email", "role", "page"]:
                 st.session_state.pop(key, None)
             st.rerun()
 
