@@ -6,3 +6,4 @@ xlsxwriter
 firebase-admin
 streamlit-cookies-controller
 secure-smtplib
+gspread
