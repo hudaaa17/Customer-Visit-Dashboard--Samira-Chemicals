@@ -19,6 +19,10 @@ if "cookie_controller" not in st.session_state:
 
 cookie = st.session_state["cookie_controller"]
 
+if "cookies_ready" not in st.session_state:
+    st.session_state["cookies_ready"] = False
+    st.rerun() 
+
 # ── Restore session from cookie on refresh ──
 if not st.session_state.get("logging_out"):  # ← only restore if NOT logging out
     if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
