@@ -100,12 +100,8 @@ else:
         st.markdown(f"👤 `{st.session_state['email']}`")
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
-            for c in ["uid", "email", "role"]:
-                try:
-                    cookie.remove(c)
-                except Exception:
-                    pass
-            for key in ["logged_in", "uid", "email", "role", "page", "logging_out"]:
+            st.query_params.clear()
+            for key in ["logged_in", "uid", "email", "role", "page"]:
                 st.session_state.pop(key, None)
             st.rerun()
 
