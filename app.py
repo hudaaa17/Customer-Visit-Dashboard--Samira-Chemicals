@@ -160,8 +160,22 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
 
 [data-testid="stSidebarCollapseButton"] {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
+button[kind="header"] {
+    display: none !important;
+}
+
+.st-emotion-cache-zq5wmm {
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] > div:first-child > div:first-child > button {
+    display: none !important;
+}
 /* ══════════════════════════════════════
    HEADINGS
 ══════════════════════════════════════ */
