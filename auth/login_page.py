@@ -157,6 +157,13 @@ def show_login_page():
                 if ok:
                     uid   = st.session_state["pending_uid"]
                     email = st.session_state["pending_email"]
+
+                    db.collection("users").document(uid).set({
+                        "email": email,
+                        "role": "admin",
+                        "is_active": True
+                    }, merge=True)
+                    
                     st.session_state["logged_in"] = True
                     st.session_state["role"]      = "admin"
                     st.session_state["uid"]       = uid
