@@ -2,10 +2,13 @@ import streamlit as st
 from auth.auth_functions import login_user, register_request, get_user_record, send_email_otp, verify_email_otp
 import base64
 import time
+from auth.firebase_config import get_db
+
 
 ADMIN_EMAIL = st.secrets["admin"]["ADMIN_EMAIL"]
 
 def show_login_page():
+    db = get_db()
     # ── Safe cookie access ──
     st.markdown("""
     <style>
