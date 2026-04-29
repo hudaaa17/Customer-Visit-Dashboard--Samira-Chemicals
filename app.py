@@ -8,11 +8,12 @@ from businesslogic.pdfgenerator import generate_visit_pdf
 import re
 from streamlit_cookies_controller import CookieController
 
-from auth.firebase_config import init_firebase
+from auth.firebase_config import init_firebase, get_db
 from auth.login_page import show_login_page
 from auth.admin_page import show_admin_page  
 
 init_firebase()
+db = get_db()  # ← add this!
 
 def is_session_valid(uid, email):
     try:
