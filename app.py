@@ -35,7 +35,7 @@ email_p = params.get("em",   None)
 role_p  = params.get("role", None)
 
 if uid_p and email_p and role_p:
-    if role_p == "admin" or is_session_valid(uid_p, email_p):   # ← verify first!
+    if is_session_valid(uid_p, email_p):   # ← verify first!
         st.session_state["logged_in"] = True
         st.session_state["uid"]       = uid_p
         st.session_state["email"]     = email_p
