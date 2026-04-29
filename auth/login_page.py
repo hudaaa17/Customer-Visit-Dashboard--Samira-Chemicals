@@ -231,6 +231,9 @@ def show_login_page():
                             st.query_params["uid"]  = uid
                             st.query_params["em"]   = email
                             st.query_params["role"] = "user"
+                            db.collection("users").document(uid).update({
+                                "is_active": True
+                            })
                             st.rerun()
 
     with tab2:
