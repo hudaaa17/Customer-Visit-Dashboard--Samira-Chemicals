@@ -15,16 +15,18 @@ from auth.admin_page import show_admin_page
 init_firebase()
 db = get_db()  # ← add this!
 
-def is_session_valid(uid, email):
+def is_session_valid(uid, email, token=None):
     try:
         user_doc = db.collection("users").document(uid).get()
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
-        return (
-            data.get("email") == email and
-            data.get("is_active", True) == True  # ← default True if field missing
-        )
+        email_match = data.get("email") == email
+        active = data.get("is_active", True)
+        if token:
+            token_match = data.get("session_token") == token
+            return email_match and active and token_match
+        return email_match and active
     except:
         return False
 
@@ -33,13 +35,15 @@ params  = st.query_params
 uid_p   = params.get("uid",  None)
 email_p = params.get("em",   None)
 role_p  = params.get("role", None)
+token_p = params.get("token", None) 
 
 if uid_p and email_p and role_p:
-    if is_session_valid(uid_p, email_p):   # ← verify first!
+    if is_session_valid(uid_p, email_p, token_p):   # ← verify first!
         st.session_state["logged_in"] = True
         st.session_state["uid"]       = uid_p
         st.session_state["email"]     = email_p
         st.session_state["role"]      = role_p
+        st.session_state["token"]     = token_p
     else:
         # Invalid/revoked session — clear params and force login
         st.query_params.clear()
