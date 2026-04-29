@@ -15,16 +15,14 @@ from auth.admin_page import show_admin_page
 init_firebase()
 
 def is_session_valid(uid, email):
-    """Check Firestore if this user's session is still valid"""
     try:
         user_doc = db.collection("users").document(uid).get()
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
-        # Check email matches and account is active
         return (
             data.get("email") == email and
-            data.get("is_active", True) == True
+            data.get("is_active", True) == True  # ← default True if field missing
         )
     except:
         return False
