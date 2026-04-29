@@ -357,22 +357,32 @@ if st.sidebar.button("🔄  Reset Filters", use_container_width=True, key="reset
     st.session_state["area_filter"] = "All"
     st.session_state["customer_filter"] = "All"
     st.session_state["industry_filter"] = "All"
+    st.rerun()
 
 # Filters — all with session_state keys now
 branch = st.sidebar.selectbox(
     "Branch", ["All"] + sorted(df["Branch"].dropna().unique().tolist()),
     key="branch_filter"
 )
+
+area_df = df if branch == "All" else df[df["Branch"] == branch]
 area = st.sidebar.selectbox(
-    "Area", ["All"] + sorted(df["Area"].dropna().unique().tolist()),
+    "Area",
+    ["All"] + sorted(area_df["Area"].dropna().unique().tolist()),
     key="area_filter"
 )
+
+customer_df = area_df if area == "All" else area_df[area_df["Area"] == area]
 customer = st.sidebar.selectbox(
-    "Customer", ["All"] + sorted(df["Customer"].dropna().unique().tolist()),
+    "Customer",
+    ["All"] + sorted(customer_df["Customer"].dropna().unique().tolist()),
     key="customer_filter"
 )
+
+industry_df = customer_df if customer == "All" else customer_df[customer_df["Customer"] == customer]
 industry = st.sidebar.selectbox(
-    "Industry", ["All"] + sorted(df["Industry"].dropna().unique().tolist()),
+    "Industry",
+    ["All"] + sorted(industry_df["Industry"].dropna().unique().tolist()),
     key="industry_filter"
 )
 
