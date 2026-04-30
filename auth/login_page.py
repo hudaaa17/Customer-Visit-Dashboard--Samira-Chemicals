@@ -1,5 +1,5 @@
 import streamlit as st
-from auth.auth_functions import login_user, register_request, get_user_record, send_email_otp, verify_email_otp
+from auth.auth_functions import login_user, register_request, get_user_record, send_email_otp, verify_email_otp, get_client_fingerprint
 import base64
 import time
 from auth.firebase_config import get_db
@@ -157,8 +157,7 @@ def show_login_page():
                 if ok:
                     import secrets
                     session_token = secrets.token_hex(32)
-                    browser_secret = secrets.token_hex(32) 
-                    
+              
                     uid   = st.session_state["pending_uid"]
                     email = st.session_state["pending_email"]
                     
@@ -166,15 +165,16 @@ def show_login_page():
                     st.session_state["role"]      = "admin"
                     st.session_state["uid"]       = uid
                     st.session_state["email"]     = email
-                    
+
+                    fingerprint = get_client_fingerprint()
                     db.collection("users").document(uid).set({
                         "email": email,
                         "role": "admin",
                         "is_active": True,
-                        "session_token": session_token
+                        "session_token": session_token,
+                        "device_fingerprint": fingerprint
                     }, merge=True)
-                    st.session_state["browser_secret"] = browser_secret
-
+                 
                     import hashlib
                     db.collection("users").document(uid).update({
                         "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
@@ -250,20 +250,21 @@ def show_login_page():
                         elif user_record["status"] == "approved":
                             import secrets
                             session_token = secrets.token_hex(32)
-                            browser_secret = secrets.token_hex(32)
                             
                             st.session_state["logged_in"] = True
                             st.session_state["role"]      = "user"
                             st.session_state["uid"]       = uid
                             st.session_state["email"]     = email
+
+                            fingerprint = get_client_fingerprint()
                             
                             db.collection("users").document(uid).update({
                                 "is_active": True,
-                                "session_token": session_token
+                                "session_token": session_token,
+                                "device_fingerprint": fingerprint
                             })
 
-                            st.session_state["browser_secret"] = browser_secret
-
+                            
                             import hashlib
                             db.collection("users").document(uid).update({
                                 "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
