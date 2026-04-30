@@ -114,11 +114,16 @@ else:
         st.markdown(f"👤 `{st.session_state['email']}`")
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
+            uid = st.session_state.get("uid")
+            if uid:
+                db.collection("users").document(uid).update({
+                    "is_active": False,
+                    "session_token": None
+                })
             st.query_params.clear()
-            for key in ["logged_in", "uid", "email", "role", "page"]:
+            for key in ["logged_in", "uid", "email", "role", "page", "token"]:
                 st.session_state.pop(key, None)
             st.rerun()
-
 
 
 # ---- CONFIG ----
