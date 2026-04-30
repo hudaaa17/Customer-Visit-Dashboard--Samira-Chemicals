@@ -157,6 +157,7 @@ def show_login_page():
                 if ok:
                     import secrets
                     session_token = secrets.token_hex(32)
+                    browser_secret = secrets.token_hex(32) 
                     
                     uid   = st.session_state["pending_uid"]
                     email = st.session_state["pending_email"]
@@ -172,6 +173,13 @@ def show_login_page():
                         "is_active": True,
                         "session_token": session_token
                     }, merge=True)
+                    st.session_state["browser_secret"] = browser_secret
+
+                    import hashlib
+                    db.collection("users").document(uid).update({
+                        "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
+                    })
+
                     
                     st.query_params["uid"]   = uid
                     st.query_params["em"]    = email
@@ -242,6 +250,7 @@ def show_login_page():
                         elif user_record["status"] == "approved":
                             import secrets
                             session_token = secrets.token_hex(32)
+                            browser_secret = secrets.token_hex(32)
                             
                             st.session_state["logged_in"] = True
                             st.session_state["role"]      = "user"
@@ -251,6 +260,13 @@ def show_login_page():
                             db.collection("users").document(uid).update({
                                 "is_active": True,
                                 "session_token": session_token
+                            })
+
+                            st.session_state["browser_secret"] = browser_secret
+
+                            import hashlib
+                            db.collection("users").document(uid).update({
+                                "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
                             })
                             
                             st.query_params["uid"]   = uid
