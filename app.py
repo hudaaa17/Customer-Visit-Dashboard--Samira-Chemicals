@@ -15,14 +15,16 @@ from auth.admin_page import show_admin_page
 init_firebase()
 db = get_db()  # ← add this!
 
-def is_session_valid(uid, email, token=None):
+def is_session_valid(uid, email, token):
     try:
+        if not token:  # if no token at all, reject immediately
+            return False
         user_doc = db.collection("users").document(uid).get()
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
         email_match = data.get("email") == email
-        active = data.get("is_active", True)
+        active = data.get("is_active", False)
         if token:
             token_match = data.get("session_token") == token
             return email_match and active and token_match
