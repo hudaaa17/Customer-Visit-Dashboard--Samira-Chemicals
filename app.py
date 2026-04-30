@@ -8,6 +8,7 @@ from businesslogic.pdfgenerator import generate_visit_pdf
 import re
 from streamlit_cookies_controller import CookieController
 
+from auth.auth_functions import get_client_fingerprint()
 from auth.firebase_config import init_firebase, get_db
 from auth.login_page import show_login_page
 from auth.admin_page import show_admin_page  
