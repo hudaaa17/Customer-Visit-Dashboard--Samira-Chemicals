@@ -266,3 +266,16 @@ def restore_request(doc_id):
 def delete_request_permanently(doc_id):
     db = get_db()
     db.collection("pending_requests").document(doc_id).delete()
+
+def get_client_fingerprint():
+    """Build a fingerprint from request headers — available in Streamlit!"""
+    try:
+        from streamlit.web.server.websocket_headers import _get_websocket_headers
+        headers = _get_websocket_headers()
+        user_agent = headers.get("User-Agent", "")
+        # Streamlit Cloud also passes X-Forwarded-For
+        ip = headers.get("X-Forwarded-For", headers.get("X-Real-Ip", ""))
+        import hashlib
+        return hashlib.sha256(f"{ip}{user_agent}".encode()).hexdigest()[:32]
+    except:
+        return None
