@@ -23,12 +23,22 @@ def is_session_valid(uid, email, token):
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
+        
         email_match = data.get("email") == email
         active = data.get("is_active", False)
-        if token:
-            token_match = data.get("session_token") == token
-            return email_match and active and token_match
-        return email_match and active
+        token_match  = data.get("session_token") == token
+
+        if not (email_match and active and token_match):
+            return False
+
+        browser_secret = st.session_state.get("browser_secret")
+        if not browser_secret:
+            return False
+
+        import hashlib
+        secret_hash = hashlib.sha256(browser_secret.encode()).hexdigest()
+        return secret_hash == data.get("browser_secret_hash")
+        
     except:
         return False
 
