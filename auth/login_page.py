@@ -155,23 +155,29 @@ def show_login_page():
             if st.button("Verify OTP", key="verify_2fa", use_container_width=True):
                 ok, msg = verify_email_otp(otp_code)
                 if ok:
+                    import secrets
+                    session_token = secrets.token_hex(32)
+                    
                     uid   = st.session_state["pending_uid"]
                     email = st.session_state["pending_email"]
-
-                    db.collection("users").document(uid).set({
-                        "email": email,
-                        "role": "admin",
-                        "is_active": True
-                    }, merge=True)
                     
                     st.session_state["logged_in"] = True
                     st.session_state["role"]      = "admin"
                     st.session_state["uid"]       = uid
                     st.session_state["email"]     = email
-                    # Set query params so refresh restores session
-                    st.query_params["uid"]  = uid
-                    st.query_params["em"]   = email
-                    st.query_params["role"] = "admin"
+                    
+                    db.collection("users").document(uid).set({
+                        "email": email,
+                        "role": "admin",
+                        "is_active": True,
+                        "session_token": session_token
+                    }, merge=True)
+                    
+                    st.query_params["uid"]   = uid
+                    st.query_params["em"]    = email
+                    st.query_params["role"]  = "admin"
+                    st.query_params["token"] = session_token  # ← add
+                    
                     for k in ["awaiting_2fa", "pending_uid", "pending_email",
                               "email_otp", "otp_sent_time"]:
                         st.session_state.pop(k, None)
@@ -234,18 +240,24 @@ def show_login_page():
                         elif user_record["status"] == "denied":
                             st.error("Access denied. Contact your administrator.")
                         elif user_record["status"] == "approved":
+                            import secrets
+                            session_token = secrets.token_hex(32)
+                            
                             st.session_state["logged_in"] = True
                             st.session_state["role"]      = "user"
                             st.session_state["uid"]       = uid
                             st.session_state["email"]     = email
-                            st.query_params["uid"]  = uid
-                            st.query_params["em"]   = email
-                            st.query_params["role"] = "user"
+                            
                             db.collection("users").document(uid).update({
-                                "is_active": True
+                                "is_active": True,
+                                "session_token": session_token
                             })
+                            
+                            st.query_params["uid"]   = uid
+                            st.query_params["em"]    = email
+                            st.query_params["role"]  = "user"
+                            st.query_params["token"] = session_token  # ← add
                             st.rerun()
-
     with tab2:
         st.markdown("""
             <p style="font-family:'Libre Baskerville',serif; font-size:13px;
