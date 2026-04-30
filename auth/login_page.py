@@ -174,12 +174,6 @@ def show_login_page():
                         "session_token": session_token,
                         "device_fingerprint": fingerprint
                     }, merge=True)
-                 
-                    import hashlib
-                    db.collection("users").document(uid).update({
-                        "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
-                    })
-
                     
                     st.query_params["uid"]   = uid
                     st.query_params["em"]    = email
@@ -264,12 +258,6 @@ def show_login_page():
                                 "device_fingerprint": fingerprint
                             })
 
-                            
-                            import hashlib
-                            db.collection("users").document(uid).update({
-                                "browser_secret_hash": hashlib.sha256(browser_secret.encode()).hexdigest()
-                            })
-                            
                             st.query_params["uid"]   = uid
                             st.query_params["em"]    = email
                             st.query_params["role"]  = "user"
