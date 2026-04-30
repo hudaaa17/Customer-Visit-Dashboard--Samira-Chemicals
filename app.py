@@ -17,30 +17,32 @@ db = get_db()  # ← add this!
 
 def is_session_valid(uid, email, token):
     try:
-        if not token:  # if no token at all, reject immediately
+        if not token:
             return False
         user_doc = db.collection("users").document(uid).get()
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
-        
-        email_match = data.get("email") == email
-        active = data.get("is_active", False)
+
+        email_match  = data.get("email") == email
+        active       = data.get("is_active", False)
         token_match  = data.get("session_token") == token
 
         if not (email_match and active and token_match):
             return False
 
-        browser_secret = st.session_state.get("browser_secret")
-        if not browser_secret:
-            return False
-
-        import hashlib
-        secret_hash = hashlib.sha256(browser_secret.encode()).hexdigest()
-        return secret_hash == data.get("browser_secret_hash")
+        # Check device fingerprint
+        current_fingerprint = get_client_fingerprint()
+        stored_fingerprint  = data.get("device_fingerprint")
         
+        if not current_fingerprint or not stored_fingerprint:
+            return False
+            
+        return current_fingerprint == stored_fingerprint
+
     except:
         return False
+
 
 # ── Read query params to restore session on refresh ──
 params  = st.query_params
