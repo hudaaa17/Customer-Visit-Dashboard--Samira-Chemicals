@@ -8,3 +8,4 @@ streamlit-cookies-controller
 secure-smtplib
 gspread
 reportlab
+streamlit-cookies-manager
