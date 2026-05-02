@@ -215,7 +215,11 @@ def change_user_password(email, new_password, uid):
     from firebase_admin import auth
     auth.update_user(uid, password=new_password)
     db = get_db()
-    db.collection("users").document(uid).update({"password_plain": new_password,  "is_active": False, "session_token": None})
+    db.collection("users").document(uid).update({
+        "password_plain": new_password,
+        "is_active": False,
+        "session_tokens": []  # ← wipe all devices
+    })
 
 def create_user_directly(email, full_name, password):
     import requests
