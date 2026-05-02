@@ -111,7 +111,7 @@ def format_inr(num):
 def load_and_preprocess_data():
 
     # 1. Load data
-    df = load_data_from_gsheet("17kHih7frWstv6Ff1jl6kgHYxUpKuz0I_UJueLaPEkwo", "Sheet1")
+    df = load_data_from_gsheet(st.secrets["spreadsheets"]["visit_sheet_id"], "Sheet1")
 
     # 2. Clean column names
     df.columns = df.columns.str.strip()
