@@ -108,7 +108,7 @@ if st.session_state["role"] == "admin":
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
                 from google.cloud import firestore as fs
-                 token = cookies.get("token")
+                token = cookies.get("token")
                 uid = st.session_state.get("uid")
                 if uid and token:
                     db.collection("users").document(st.session_state["uid"]).update({
