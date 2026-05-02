@@ -157,29 +157,29 @@ def show_login_page():
                 if ok:
                     import secrets
                     session_token = secrets.token_hex(32)
-              
+                
                     uid   = st.session_state["pending_uid"]
                     email = st.session_state["pending_email"]
-                    
+                
                     st.session_state["logged_in"] = True
                     st.session_state["role"]      = "admin"
                     st.session_state["uid"]       = uid
                     st.session_state["email"]     = email
-
-                    fingerprint = get_client_fingerprint()
+                
                     db.collection("users").document(uid).set({
                         "email": email,
                         "role": "admin",
                         "is_active": True,
                         "session_token": session_token,
-                        "device_fingerprint": fingerprint
                     }, merge=True)
-                    
-                    st.query_params["uid"]   = uid
-                    st.query_params["em"]    = email
-                    st.query_params["role"]  = "admin"
-                    st.query_params["token"] = session_token  # ← add
-                    
+                
+                    # ← replace query params with cookies
+                    cookies["uid"]   = uid
+                    cookies["email"] = email
+                    cookies["role"]  = "admin"
+                    cookies["token"] = session_token
+                    cookies.save()
+                
                     for k in ["awaiting_2fa", "pending_uid", "pending_email",
                               "email_otp", "otp_sent_time"]:
                         st.session_state.pop(k, None)
@@ -244,24 +244,24 @@ def show_login_page():
                         elif user_record["status"] == "approved":
                             import secrets
                             session_token = secrets.token_hex(32)
-                            
+                        
                             st.session_state["logged_in"] = True
                             st.session_state["role"]      = "user"
                             st.session_state["uid"]       = uid
                             st.session_state["email"]     = email
-
-                            fingerprint = get_client_fingerprint()
-                            
+                        
                             db.collection("users").document(uid).update({
                                 "is_active": True,
                                 "session_token": session_token,
-                                "device_fingerprint": fingerprint
                             })
-
-                            st.query_params["uid"]   = uid
-                            st.query_params["em"]    = email
-                            st.query_params["role"]  = "user"
-                            st.query_params["token"] = session_token  # ← add
+                        
+                            # ← replace query params with cookies
+                            cookies["uid"]   = uid
+                            cookies["email"] = email
+                            cookies["role"]  = "user"
+                            cookies["token"] = session_token
+                            cookies.save()
+                        
                             st.rerun()
     with tab2:
         st.markdown("""
