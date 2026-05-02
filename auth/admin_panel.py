@@ -5,6 +5,8 @@ def show_admin_panel():
     st.subheader("Admin Panel — Access Requests")
 
     all_users = get_all_requests()
+    for u in all_users:
+        st.write(u) 
     all_users = [u for u in all_users if u.get("role") != "admin"] 
     pending = [u for u in all_users if u.get("status") == "pending"]
     others  = [u for u in all_users if u.get("status") != "pending" and u.get("role") != "admin"]
