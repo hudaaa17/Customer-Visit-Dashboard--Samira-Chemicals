@@ -35,7 +35,7 @@ def is_session_valid(uid, email, token):
         return (
             data.get("email") == email and
             data.get("is_active", False) and
-            data.get("session_token") == token
+            token in data.get("session_tokens", [])  # ← check list
         )
     except:
         return False
@@ -107,10 +107,14 @@ if st.session_state["role"] == "admin":
             st.rerun()
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
-                db.collection("users").document(st.session_state["uid"]).update({
-                "is_active": False,
-                "session_token": None
-            })
+                from google.cloud import firestore as fs
+                 token = cookies.get("token")
+                uid = st.session_state.get("uid")
+                if uid and token:
+                    db.collection("users").document(st.session_state["uid"]).update({
+                        "is_active": False,
+                         "session_tokens": fs.ArrayRemove([token])
+                    })
                 cookies["uid"]   = ""
                 cookies["email"] = ""
                 cookies["role"]  = ""
@@ -129,17 +133,21 @@ else:
         st.markdown(f"👤 `{st.session_state['email']}`")
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
-            uid = st.session_state.get("uid")
-            if uid:
-                db.collection("users").document(uid).update({
-                    "is_active": False,
-                    "session_token": None
-                })
-            st.query_params.clear()
-            for key in ["logged_in", "uid", "email", "role", "page", "token"]:
-                st.session_state.pop(key, None)
-            st.rerun()
-
+            from google.cloud import firestore as fs
+                token = cookies.get("token")
+                uid = st.session_state.get("uid")
+                if uid and token:
+                    db.collection("users").document(uid).update({
+                        "session_tokens": fs.ArrayRemove([token])  # ← remove only this device
+                    })
+                cookies["uid"]   = ""
+                cookies["email"] = ""
+                cookies["role"]  = ""
+                cookies["token"] = ""
+                cookies.save()
+                for key in ["logged_in", "uid", "email", "role", "page"]:
+                    st.session_state.pop(key, None)
+                st.rerun()
 
 # ---- CONFIG ----
 st.set_page_config(layout="wide")
