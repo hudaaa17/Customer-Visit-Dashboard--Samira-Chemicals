@@ -373,7 +373,8 @@ def show_admin_page():
     st.markdown('<div class="section-title">All Users</div>', unsafe_allow_html=True)
 
     all_users = get_all_users()
-
+    all_users = [u for u in all_users and u.get("role") != "admin"]
+    
     if not all_users:
         st.info("No users yet.")
     else:
