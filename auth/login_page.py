@@ -156,6 +156,8 @@ def show_login_page(cookies):
                 ok, msg = verify_email_otp(otp_code)
                 if ok:
                     import secrets
+                    from google.cloud import firestore as fs
+                
                     session_token = secrets.token_hex(32)
                 
                     uid   = st.session_state["pending_uid"]
@@ -170,10 +172,9 @@ def show_login_page(cookies):
                         "email": email,
                         "role": "admin",
                         "is_active": True,
-                        "session_token": session_token,
+                        "session_tokens": fs.ArrayUnion([session_token])  # ← changed
                     }, merge=True)
                 
-                    # ← replace query params with cookies
                     cookies["uid"]   = uid
                     cookies["email"] = email
                     cookies["role"]  = "admin"
@@ -243,6 +244,8 @@ def show_login_page(cookies):
                             st.error("Access denied. Contact your administrator.")
                         elif user_record["status"] == "approved":
                             import secrets
+                            from google.cloud import firestore as fs
+                        
                             session_token = secrets.token_hex(32)
                         
                             st.session_state["logged_in"] = True
@@ -252,10 +255,9 @@ def show_login_page(cookies):
                         
                             db.collection("users").document(uid).update({
                                 "is_active": True,
-                                "session_token": session_token,
+                                "session_tokens": fs.ArrayUnion([session_token])  # ← changed
                             })
                         
-                            # ← replace query params with cookies
                             cookies["uid"]   = uid
                             cookies["email"] = email
                             cookies["role"]  = "user"
