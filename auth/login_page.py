@@ -7,7 +7,7 @@ from auth.firebase_config import get_db
 
 ADMIN_EMAIL = st.secrets["admin"]["ADMIN_EMAIL"]
 
-def show_login_page():
+def show_login_page(cookies):
     db = get_db()
     # ── Safe cookie access ──
     st.markdown("""
