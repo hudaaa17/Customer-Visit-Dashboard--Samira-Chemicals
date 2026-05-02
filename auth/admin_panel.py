@@ -6,7 +6,7 @@ def show_admin_panel():
 
     all_users = get_all_requests()
     pending = [u for u in all_users if u.get("status") == "pending"]
-    others  = [u for u in all_users if u.get("status") != "pending"]
+    others  = [u for u in all_users if u.get("status") != "pending" & u.get("role")!= "admin"]
 
     if not pending:
         st.info("No pending requests.")
