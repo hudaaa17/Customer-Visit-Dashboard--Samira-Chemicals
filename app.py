@@ -14,7 +14,15 @@ from auth.login_page import show_login_page
 from auth.admin_page import show_admin_page  
 
 init_firebase()
-db = get_db()  # ← add this!
+db = get_db()
+
+from streamlit_cookies_manager import EncryptedCookieManager
+cookies = EncryptedCookieManager(
+    prefix="jeekay_",
+    password=st.secrets["cookies"]["secret_key"]
+)
+if not cookies.ready():
+    st.stop()
 
 def is_session_valid(uid, email, token):
     try:
@@ -24,55 +32,45 @@ def is_session_valid(uid, email, token):
         if not user_doc.exists:
             return False
         data = user_doc.to_dict()
-
-        email_match  = data.get("email") == email
-        active       = data.get("is_active", False)
-        token_match  = data.get("session_token") == token
-
-        if not (email_match and active and token_match):
-            return False
-
-        # Check device fingerprint
-        current_fingerprint = get_client_fingerprint()
-        stored_fingerprint  = data.get("device_fingerprint")
-        
-        if not current_fingerprint or not stored_fingerprint:
-            return False
-            
-        return current_fingerprint == stored_fingerprint
-
+        return (
+            data.get("email") == email and
+            data.get("is_active", False) and
+            data.get("session_token") == token
+        )
     except:
         return False
 
+# ── REMOVE all query params code, REPLACE with this ──
+if not st.session_state.get("logged_in"):
+    uid_c   = cookies.get("uid")
+    email_c = cookies.get("email")
+    role_c  = cookies.get("role")
+    token_c = cookies.get("token")
 
-# ── Read query params to restore session on refresh ──
-params  = st.query_params
-uid_p   = params.get("uid",  None)
-email_p = params.get("em",   None)
-role_p  = params.get("role", None)
-token_p = params.get("token", None) 
-
-if uid_p and email_p and role_p:
-    if is_session_valid(uid_p, email_p, token_p):   # ← verify first!
-        st.session_state["logged_in"] = True
-        st.session_state["uid"]       = uid_p
-        st.session_state["email"]     = email_p
-        st.session_state["role"]      = role_p
-        st.session_state["token"]     = token_p
-    else:
-        # Invalid/revoked session — clear params and force login
-        st.query_params.clear()
-        st.session_state["logged_in"] = False
+    if uid_c and email_c and role_c and token_c:
+        if is_session_valid(uid_c, email_c, token_c):
+            st.session_state["logged_in"] = True
+            st.session_state["uid"]       = uid_c
+            st.session_state["email"]     = email_c
+            st.session_state["role"]      = role_c
+        else:
+            cookies["uid"]   = ""
+            cookies["email"] = ""
+            cookies["role"]  = ""
+            cookies["token"] = ""
+            cookies.save()
+            st.session_state["logged_in"] = False
 
 # ── Auth gate ──
 if not st.session_state.get("logged_in"):
-    show_login_page()
+    show_login_page(cookies)
     st.stop()
 
 # ── Page routing ──
 if st.session_state["role"] == "admin":
     if "page" not in st.session_state:
         st.session_state["page"] = "dashboard"
+    # ... rest of your code
 
     with st.sidebar:
         email = st.session_state['email']
@@ -110,11 +108,15 @@ if st.session_state["role"] == "admin":
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
                 db.collection("users").document(st.session_state["uid"]).update({
-                    "is_active": False,
-                    "session_token": None  # ← invalidate token
-                })
-                st.query_params.clear()
-                for key in ["logged_in", "uid", "email", "role", "page", "token"]:
+                "is_active": False,
+                "session_token": None
+            })
+                cookies["uid"]   = ""
+                cookies["email"] = ""
+                cookies["role"]  = ""
+                cookies["token"] = ""
+                cookies.save()
+                for key in ["logged_in", "uid", "email", "role", "page"]:
                     st.session_state.pop(key, None)
                 st.rerun()
             
