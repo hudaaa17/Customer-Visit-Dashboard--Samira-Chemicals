@@ -134,20 +134,20 @@ else:
         st.divider()
         if st.button("Logout", key="logout_btn", use_container_width=True):
             from google.cloud import firestore as fs
-                token = cookies.get("token")
-                uid = st.session_state.get("uid")
-                if uid and token:
-                    db.collection("users").document(uid).update({
-                        "session_tokens": fs.ArrayRemove([token])  # ← remove only this device
-                    })
-                cookies["uid"]   = ""
-                cookies["email"] = ""
-                cookies["role"]  = ""
-                cookies["token"] = ""
-                cookies.save()
-                for key in ["logged_in", "uid", "email", "role", "page"]:
-                    st.session_state.pop(key, None)
-                st.rerun()
+            token = cookies.get("token")
+            uid = st.session_state.get("uid")
+            if uid and token:
+                db.collection("users").document(uid).update({
+                    "session_tokens": fs.ArrayRemove([token])  # ← remove only this device
+                })
+            cookies["uid"]   = ""
+            cookies["email"] = ""
+            cookies["role"]  = ""
+            cookies["token"] = ""
+            cookies.save()
+            for key in ["logged_in", "uid", "email", "role", "page"]:
+                st.session_state.pop(key, None)
+            st.rerun()
 
 # ---- CONFIG ----
 st.set_page_config(layout="wide")
