@@ -8,5 +8,4 @@ def init_firebase():
         firebase_admin.initialize_app(cred)
 
 def get_db():
-    init_firebase()
     return firestore.client()
